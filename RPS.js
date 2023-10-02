@@ -49,7 +49,7 @@ export function RPS() {
       if (randomNumber === 3) {
         computerChoice = 'paper'
       }
-      computerChoiceDisplay.innerHTML = `<img src="${computerChoice}.png" alt="${computerChoice}">`
+      computerChoiceDisplay.innerHTML = `<img src="Images/${computerChoice}.png" alt="${computerChoice}">`
     }
   
     function getResult() {

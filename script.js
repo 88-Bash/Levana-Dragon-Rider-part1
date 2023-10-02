@@ -201,14 +201,14 @@ const locations = [
     name: "exploration7",
     "button text": ["Left", "right"],
     "button functions": [mainHall, corridor],
-    text: "The wind was defening, you woudlnt dare to go outside. It was time to explore the cave. The storm might take a while, might as well see the other options. There is a crossroad. You can go lef or right."
+    text: "The wind was defening, you woudln't dare to go outside. It was time to explore the cave. The storm seem to pick up on intensivity, might as well explore the surroundings. There is a crossroad. You can go lef or right."
   },
   // right
   {
     name: "corridor8",
     "button text": ["Touch", "go further"],
     "button functions": [goFight3, further],
-    text: "The corridor is getting smaller but still big enough to follow. Spiderwebs and slime is everywhere. You see wet eggs the size of a big wattermelon bunched together. You getting a closer look."
+    text: "The corridor is getting smaller but still big enough to follow. Spiderwebs and slime is everywhere. You see wet eggs the size of a big wattermelons bunched together. You getting a closer look."
   },
   {
     name: "eggs9",
