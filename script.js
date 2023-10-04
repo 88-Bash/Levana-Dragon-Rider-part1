@@ -30,23 +30,24 @@ const headerLocations = [
 let xp;
 let health;
 let maxHealth;
+// inventory 
+
+let noDust;
 let cDust;
 let rDust;
 let lDust;
 let healCardrige;
-let ammoCardrige;
+let pdaInstal = false;
 
 // combat
 
 let combat = false;
-let afterFight = false;
-let fightHealth;
 let totalDmg = 0;
 
 // event
 
 let sEggs = 0;
-let dexInstal = false;
+
 
 // weapons
 let currentWeapon = 0;
@@ -74,14 +75,17 @@ const weapons = [
 
 let fighting = 0;
 let monsterHealth;
+let isMonsterDead = false;
 
 const monsters = [
   {
     name: "Practice Dummy",
     level: 3,
-    damage: 5,
+    damageMin: 0,
+    damageMax: 0,
+    crit: 5,
     health: 45,
-    text: "You tripped over a little stone and bumped your head into the bucket. Ouch!",
+    critText: "You tripped over a little stone and bumped your head into the bucket. Ouch!",
     deathText: "Bucket falls from dummy and rolls down to your feet. You place your foot on top of it and scream in victory 'UUUAAAAA!!'"
   },
   {
@@ -93,7 +97,8 @@ const monsters = [
     health: 88,
     text: " young bandit reach you and land a punch",
     critText: " young bandit hard kicks knocks you of balance for a moment",
-    deathText: "Dazzled enemy retreats running away from you, he's confused and scared."
+    deathText: "With the last strike, Young bandit's eyes seem to lost focus, he wobbles on his feet and almost hits the ground, but manage to prop himself with his hand. He then turns around swiftly and heads away from you, runing, still trying to maintain his balance.",
+    playerDeath: "Young Bandint knocks you out uncountios. He takes your cart and runs away with all it's load. 3P-A immidietly flies towards you home to get help, but you never found out what happened ... Terrific sand storm covered your body and you were never found. Harsh reality forgives no one. "
   },
   {
     name: "Baby Spiderling",
@@ -104,10 +109,11 @@ const monsters = [
     health: 60,
     text: " Baby spiderling bites your leg",
     critText: "Baby spiderling jumps and reach your shoulder biting it on the side causing bleedin",
-    deathText: "After last hit baby spiderling stiffens its legs and rolls on its back. Starts twitching. It seems to be dead."
+    deathText: "After last hit baby spiderling stiffens its legs and rolls on its back. Starts twitching. It seems to be dead.",
+    playerDeath: "Young spiderling bites your neck and injects venom, they have no control over dose. Your feel its effects immidietly and fell down on th ground, loosing countionsness. Your body was never found. Gramma moarns her loss and move to live with your uncle. Tragedy strucked her again."
   },
   {
-    name: "Spiderling",
+    name: " Spiderling",
     level: 14,
     damageMin: 7,
     damageMax: 10,
@@ -115,7 +121,8 @@ const monsters = [
     health: 120,
     text: " Spiderling extend it's front legs and delivers a pounding hit on your chest",
     critText: " Spiderling reach you with its fangs and bite you causing bleeding.",
-    deathText: "Spiderling stiffens up and rolls on it's back. Starts twitching. It seems to be dead."
+    deathText: "Spiderling stiffens up and rolls on it's back. Starts twitching. It seems to be dead.",
+    playerDeath: "Spiderling bites you in your chest, striking the heart. You feel pain for a moment, but it's over. You know it's over. You see faces of your parents and your grandma, hoping for the last time that she will be okay."
   },
   {
     name: "Arakh Queen",
@@ -126,12 +133,15 @@ const monsters = [
     health: 350,
     text: " Queen spits hardened ball of web that hits you.",
     critText: " Queen swoops its long legs and gets you of your feet.",
-    deathText: "Queen squicks in pain and fall on the ground. It's over, she's dead."
+    deathText: "Queen jumps towards you, but you were ready, you proped the other end of the stick firmly on the ground at angle towards the Queen, you aimed between the jaws. She then falls straigth on it and puncture her head dying instantly. Momentum of her body pushes you away and you fall on a rock hitting your head. Your ears are ringing, but you dont panic. You know its over.the queen is dead.",
+    playerDeath: "Queens jumps on you and holds you with her many legs, rolling you like a cotton candy in it's web, then injects venom. You are terrified, but just for a moment, you fait away like falling asleep, but never wake up. She takes you to incubation shaft for spiderling to feed on you while you are still alive."
   },
   {
     name: "Backyard Monster",
-    level: 3,
-    damage: 5,
+    level: 4,
+    damageMin: 4,
+    damageMax: 7,
+    crit: 8,
     health: 45,
     text: "Monster dashes your way and reaches you with its sharp claw. You take some damage.",
     deathText: "With your last strike enemy falls down and stop moving. You place your foot on top of its body and scream in victory 'UUUAAAAA!!'"
@@ -152,7 +162,7 @@ const locations = [
   {
     name: "training1",
     "button text": ["Attack!", "Parry"],
-    "button functions": [attackDummy, parryDummy],
+    "button functions": [pressAttack, pressParry],
     text: "You decided to fight. What's next?!"
   },
   {
@@ -182,7 +192,7 @@ const locations = [
   {
     name: "bandits6",
     "button text": ["Attack!", "Parry"],
-    "button functions": [attack, parry],
+    "button functions": [pressAttack, pressParry],
     text: "The young bandit stands before you, dressed in rugged clothing. His face is rough and weathered and he smirks in confidence. You can tell it's not his first time and you don't know what he's capable of, but neither does he."
   },
   //cutscene
@@ -202,7 +212,7 @@ const locations = [
   {
     name: "eggs9",
     "button text": ["Attack!", "Parry"],
-    "button functions": [attack, parry],
+    "button functions": [pressAttack, pressParry],
     text: "You curiousity took over and you touched the wet egg. 'You never touch the wet egg' as you remember your father always told you when exploring caves when you where little. It started to wobble and bursted. Small spiderling jump out and directly lock onto you. It got fangs and posture with front legs up. Dont let it get you."
   },
   {
@@ -214,13 +224,13 @@ const locations = [
   {
     name: "search11",
     "button text": ["Look inside the jacket", "Search pants pockets"],
-    "button functions": [takeDex, takeDust],
+    "button functions": [takePda, takeDust],
     text: "You command 3P-A to cut opening with its laser. Inside you see a soldier in Gurdian faction uniform. You hasitate to search the body."
   },
   {
     name: "young spider12",
     "button text": ["Attack!", "Parry"],
-    "button functions": [attack, parry],
+    "button functions": [pressAttack, pressParry],
     text: "Suddenly, a dog size spider jumps out from the shadows and tries to attack you without any warning."
   },
   {
@@ -238,7 +248,7 @@ const locations = [
   {
     name: "Queen fight15",
     "button text": ["Attack!", "Parry"],
-    "button functions": [attack, parry],
+    "button functions": [pressAttack, pressParry],
     text: "Giant spider noticed your presence and skreeeks in high pitch sending a wave of piercing sound through out the cave. It throwing it's leg in the air towards you but seems to be protecting soemthing shining under her body and dont want to leave it's side."
   },
   {
@@ -249,27 +259,27 @@ const locations = [
   },
   {
     name: "took pda first17",
-    "button text": ["empty", "Take dust"],
+    "button text": ["empty", "search pants pockets"],
     "button functions": [empty, takeDust2],
     text: "You lift the side of the jacket and find a device that appears to be military grade PDA. You take it in your hand and stare at it as it reminds you of the one that your father had."
   },
   {
     name: "took dust first18",
-    "button text": ["Take pda", "empty"],
-    "button functions": [takeDex2, empty],
+    "button text": ["look inside the jacket", "empty"],
+    "button functions": [takePda2, empty],
     text: "You reach the bulky object in the pocket. You take it out and to your surprise, you see a rare dust vial, quite a find in these times. Its worth some credits."
   },
   {
     name: "empty cocoon19",
     "button text": ["empty", "empty"],
     "button functions": [empty, empty],
-    text: "There is nothing left, but the dried out corps of a soldier. You take the dogtag. Behind every death there is a family that moarns. Maybe they would want to know."
+    text: "There is nothing left, but the dried out corps of a soldier. You take the dogtag. It says Benjamin Ronalds. Behind every death there is a family that moarns. Maybe they would want to know. Then on the back of it there is some kind of poem engraved, you wonder what that could be. Maybe has to do something with the locket."
   },
   {
-    name: "take dex2 20",
+    name: "take pda2 20",
     "button text": ["look for more", "look for more"],
     "button functions": [emptyCocoon, emptyCocoon],
-    text: "You lift the side of the jacket and find a device that appears to be military grade PDA. You take it in your hand and stare at it as it reminds you of the one that your father had."
+    text: "You lift the side of the jacket and it appears to be some kind of locket. It appear to have some symbols in front of it. You remember your father had one just like this one with symbols you had to set in right configuration in order to open it."
   },
   {
     name: "take dust2 21",
@@ -310,7 +320,7 @@ const locations = [
   {
     name: "training0 27",
     "button text": ["Attack!", "Parry"],
-    "button functions": [attackDummy, parryDummy],
+    "button functions": [pressAttack, pressParry],
     text: "You took a deep breath. You feel adrenaline pumping through your veins. You know its now or never. There is only one goal. Defeat the monster. "
   },
   {
@@ -328,7 +338,7 @@ const cutscene = [
     text: "<p>High-pitched tones from a robot and loud knocks echoed from the garden through the kitchen window. The enthusiastic taunts of young men ceased when an old lady shout.</p> <p> - MISHA! ... MIIIISHAAAA! ... - she yelled.</p><p> - Yes, grandma!? - Misha responded.</p><p> - Come here, I need to talk to you! </p> <p> - I'm coming, Grandma! Just few more ... strikes! - he replied, delivering another loud knock.</p> <p> - When will he finally stop playing around? ... - the old lady muttered as she wrapped up the last meteor dust vial.</p>"
   },
   {
-    text: "<p> - I'm here, Grandma, - said Misha, entering the kitchen with vigor.</p> <p> - Come here honey ... You know, you remind me of your father ... - said Grandma.</p> <p> - You mean brave and adventurous? - Misha asked.</p> <p> - No! Living in a fantasy world and reckless! - Grandma replied arroused, she then soften her voice and continue - You need to start helping around the house. It's hard for me alone and we need to think about how we'll survive if things get worse. The Arach attack and wars between factions are bad enough for all of us. We need to be serious about preparing for the worst.</p> <p>Grandma handed Misha a vial of dust packed in paper. </p> <p> - Put it in the crate and load everything into the cart.</p> <p>Misha took the vial without saying anything and put it in the crate. Lifting up the crate, he looked at Grandma. She pointed to the cart, and he left the house through the kitchen doors.</p>"
+    text: "<p> - I'm here, Grandma, - said Misha, entering the kitchen with vigor.</p> <p> - Come here honey ... You know, you remind me of your father - said Grandma.</p> <p> - You mean brave and adventurous? - Misha asked.</p> <p> - No! Living in a fantasy world and reckless! - Grandma replied arroused, she then soften her voice and continue - You need to start helping around the house. It's hard for me alone and we need to think about how we'll survive if things get worse. The Arach attack and wars between factions are bad enough for all of us. We need to be serious about preparing for the worst.</p> <p>Grandma handed Misha a vial of dust packed in paper. </p> <p> - Put it in the crate and load everything into the cart.</p> <p>Misha took the vial without saying anything and put it in the crate. Lifting up the crate, he looked at Grandma. She pointed to the cart, and he left the house through the kitchen doors.</p>"
   },
   {
     text: "After a moment has passed, Misha and Grandma finished wrapping the cart with the tarp and made sure everything was attached tightly.<p> - Misha, I want you to take this cart to your uncle in the city, - said Grandma. - I packed your father's armor, your mother's jewelry, and other things that we need to get rid of to be able to survive. There is a chest that I don't want you to mess around with. Your uncle knows about it. It's locked, and it should stay that way. The crates of dust vials are at the back, so it will be easier to unload when you get there. I made you food for the road. It's all in the front. Try to be smart with it. The gyro of the cart is fixed. Giovanni, our neighbor, helped me out with it. He is a very kind man and skillful mechanic, but try to be careful. You know how often those carts break. Please Misha, take the safe path and pay attention on the road. If anything seems to be out of the ordinary, send the 'triple A' to your uncle for help. I have PDA for your robot with preinstalled medical functions. If you get injured, just use it. I will load cartridges for three uses, just in case, but I'd rather you didn't use any of them. </p>"
@@ -352,13 +362,13 @@ const cutscene = [
     text: "you take the egg, the adventure is finished, but its just the beggining."
   },
   {
-    text: "instalation of pda, misha fascinated about the military pda he hacks 3P A to override the printing mode disabled by low consumption mode. It shows a lot of data is encrypted and the las log was when the arakh attack took place, where your mom and dad has been last seen, but misha still can install the advance module."
+    text: "Misha took the locket and went to the cart to sit down and tinker with it. He turn around the dogtag and reads the poem' One rules the ground, one rules the skies.Both wear a crown, One never dies. eternal embraceTheir power entwine At the centre of space Energy  aligns. Like a clock, cycles go round No man can make it stopNo one can shut it down'"
   }
 ];
 
 // 3P-A "TripleA" as Antigravity AI Asssitant
 
-let dexType = 0;
+let pdaType = 0;
 
 const asistant = [
   [{
@@ -366,12 +376,6 @@ const asistant = [
     name: "home screen",
     "button text": ["empty", "empty", "esc"],
     "button functions": [emptySlot, emptySlot, esc]
-  },
-  {
-    name: "after match",
-    "button text": ["empty", "empty", "Info"],
-    "button functions": [emptySlot, emptySlot, afterMatch],
-    text: "You feel sour from the fight, you want to regroup and take care of your inventory."
   }
   ],
   [{
@@ -381,15 +385,9 @@ const asistant = [
     "button functions": [empty, healing, esc]
   },
   {
-    name: "after match",
-    "button text": ["empty", "Health", "Info"],
-    "button functions": [empty, healing, afterMatch],
-    text: "You feel sour from the fight, you want to regroup and take care of your inventory."
-  },
-  {
     name: "health",
-    "button text": ["empty", "Heal", "esc"],
-    "button functions": [empty, heal, esc],
+    "button text": ["empty", "Heal", "Home"],
+    "button functions": [empty, heal, home],
     text: "You feel sour from the fight, you want to regroup and take care of your inventory."
   }
   ],
@@ -400,21 +398,15 @@ const asistant = [
     "button functions": [crafting, healing, esc]
   },
   {
-    name: "after match",
-    "button text": ["Craft", "Health", "Info"],
-    "button functions": [crafting, healing, afterMatch],
-    text: "You feel sour from the fight, you want to regroup and take care of your inventory."
-  },
-  {
     name: "health",
-    "button text": ["Health Cardrige", "Heal", "esc"],
-    "button functions": [makeHealth, heal, esc],
+    "button text": ["Health Cardrige", "Heal", "Home"],
+    "button functions": [makeHealth, heal, home],
     text: "You feel sour from the fight, you want to regroup and take care of your inventory."
   },
   {
     name: "craft",
-    "button text": ["Upgrade Weapon", "empty", "esc"],
-    "button functions": [upgradeWeapon, emptySlot, esc],
+    "button text": ["Upgrade Weapon", "empty", "Home"],
+    "button functions": [upgradeWeapon, emptySlot, home],
     text: "You feel sour from the fight, you want to regroup and take care of your inventory."
   }]
 ];
@@ -434,6 +426,7 @@ const text = document.querySelector("#text");
 const xpText = document.querySelector("#xpText");
 const healthText = document.querySelector("#healthText");
 const hcText = document.querySelector("#hcText");
+const dustText = document.querySelector("#dustText");
 const cDustText = document.querySelector("#cDustText");
 const rDustText = document.querySelector("#rDustText");
 const lDustText = document.querySelector("#lDustText");
@@ -451,26 +444,66 @@ button3.onclick = assist;
 // asistant
 
 function assist() {
-  dexUpdate(dexType, 0);
-  header.innerText = headerLocations[13].title;
-  getHomeScreenText();
+
+  if (combat == true) {
+    text.innerText = "You have no time to access 3P-A, you need to stay focus on a fight. Use Defensive movements to gain a moment to use basic function of Tripple A";
+  } else if (health < (0.2 * maxHealth)) {
+    button1.classList.remove("blinking-border");
+    button2.classList.add("blinking-border");
+    button3.classList.remove("blinking-border");
+    pdaUpdate(pdaType, 0);
+    header.innerText = headerLocations[13].title;
+    getHomeScreenText();
+  } else {
+    button1.classList.remove("blinking-border");
+    button2.classList.remove("blinking-border");
+    button3.classList.remove("blinking-border");
+    pdaUpdate(pdaType, 0);
+    header.innerText = headerLocations[13].title;
+    getHomeScreenText();
+  }
 }
 
 function esc() {
-  updateLocation(locations[currentLocation]);
-  button3.innerText = "3P-A assist.";
-  button3.onclick = assist;
-  header.innerText = headerLocations[currentHeader].title;
+
+  if (isMonsterDead) {
+    text.innerText = "Adrenaline still circulates in your body, you are trying to calm your breath. You stand still and try to think what's next.";
+    button1.innerText = "3P-A assist.";
+    button1.onclick = assist;
+    button2.innerText = "3P-A assist.";
+    button2.onclick = assist;
+    button3.innerText = "3P-A assist.";
+    button3.onclick = assist;
+    if (health < (0.2 * maxHealth)) {
+      button1.classList.add("blinking-border");
+      button2.classList.add("blinking-border");
+      button3.classList.add("blinking-border");
+    }
+  } else {
+    updateLocation(locations[currentLocation]);
+    if (health > (0.2 * maxHealth)) {
+      button1.classList.remove("blinking-border");
+      button2.classList.remove("blinking-border");
+    }
+    button3.innerText = "3P-A assist.";
+    button3.onclick = assist;
+    header.innerText = headerLocations[currentHeader].title;
+  }
 }
 
-function dexUpdate(dexType, index) {
-  button1.innerText = asistant[dexType][index]["button text"][0];
-  button2.innerText = asistant[dexType][index]["button text"][1];
-  button3.innerText = asistant[dexType][index]["button text"][2];
-  button1.onclick = asistant[dexType][index]["button functions"][0];
-  button2.onclick = asistant[dexType][index]["button functions"][1];
-  button3.onclick = asistant[dexType][index]["button functions"][2];
-  text.innerHTML = asistant[dexType][index].text;
+function home() {
+  pdaUpdate(pdaType, 0);
+  getHomeScreenText();
+}
+
+function pdaUpdate(pdaType, index) {
+  button1.innerText = asistant[pdaType][index]["button text"][0];
+  button2.innerText = asistant[pdaType][index]["button text"][1];
+  button3.innerText = asistant[pdaType][index]["button text"][2];
+  button1.onclick = asistant[pdaType][index]["button functions"][0];
+  button2.onclick = asistant[pdaType][index]["button functions"][1];
+  button3.onclick = asistant[pdaType][index]["button functions"][2];
+  text.innerHTML = asistant[pdaType][index].text;
 }
 
 // location
@@ -484,384 +517,12 @@ function updateLocation(locations) {
   locations = currentLocation;
 }
 
-// health
-
-function updateHealth(change) {
-
-  if (change === 0) {
-    return;
-  }
-  healthText.innerHTML = health;
-  if (health < 30) {
-    healthText.style.color = "red";
-  } else if (health == maxHealth) {
-    healthText.style.color = "green";
-  } else {
-    healthText.style.color = "black";
-  }
-
-  const animationSpan = document.createElement("span");
-  animationSpan.innerText = change > 0 ? "+" + change : change;
-  animationSpan.classList.add("health-animation");
-  animationSpan.style.color = change > 0 ? "green" : "red";
-  animationSpan.style.top = `${Math.floor(Math.random() * 21) - 10}px`;
-  animationSpan.style.left = `${Math.floor(Math.random() * 21) - 10}px`;
-  document.querySelector("#healthText").appendChild(animationSpan);
-  animationSpan.classList.add("animate");
-
-  animationSpan.addEventListener("animationend", () => {
-    animationSpan.remove();
-  });
-}
-
-function updateMonsterHealth(change) {
-  if (change === 0) {
-    return;
-  }
-
-  monsterHealth += change;
-  monsterHealthText.innerText = monsterHealth;
-
-  const animationSpan = document.createElement("span");
-  animationSpan.innerText = change > 0 ? "+" + change : change;
-  animationSpan.classList.add("monsterHealth-animation");
-  animationSpan.style.color = "white";
-
-  const monsterHealthRect = monsterHealthText.getBoundingClientRect();
-
-  animationSpan.style.top = `${monsterHealthRect.top + Math.floor(Math.random() * 21) - 10}px`;
-  animationSpan.style.left = `${monsterHealthRect.left + Math.floor(Math.random() * 21) - 10}px`;
-
-  document.body.appendChild(animationSpan);
-
-  animationSpan.classList.add("animate");
-
-  animationSpan.addEventListener("animationend", () => {
-    animationSpan.remove();
-  });
-}
-
-
-// gaming functions
-
-function attackDummy() {
-  let playerDamageTaken = 0;
-  let monsterDamageTaken = 0;
-
-  const weaponDamage = getRandomDamage(
-    weapons[currentWeapon].powerMin,
-    weapons[currentWeapon].powerMax,
-    weapons[currentWeapon].crit
-  );
-
-  monsterDamageTaken = weaponDamage + Math.round(Math.random() * xp) + 1;
-
-  if (currentLocation == 1) {
-    if (monsterHealth <= 0 || health <= 0) {
-      empty();
-    } else {
-      if (Math.random() < 0.28) {
-        playerDamageTaken = monsters[fighting].damage;
-        text.innerText = monsters[fighting].text;
-      } else {
-        if (weaponDamage >= weapons[currentWeapon].crit) {
-          text.innerText = weapons[currentWeapon].critText;
-        } else {
-          text.innerText = weapons[currentWeapon].text;
-        }
-      }
-    }
-  } else if (currentLocation == 27) {
-    if (monsterHealth <= 0 || health <= 0) {
-      empty();
-    } else {
-      if (Math.random() < 0.28) {
-        playerDamageTaken = monsters[fighting].damage;
-        text.innerText = monsters[fighting].text;
-      } else {
-        if (weaponDamage >= weapons[currentWeapon].crit) {
-          text.innerText = weapons[currentWeapon].critText;
-        } else {
-          text.innerText = weapons[currentWeapon].text;
-        }
-      }
-    }
-  }
-
-  monsterHealth -= monsterDamageTaken;
-  monsterHealthText.innerText = monsterHealth;
-  health -= playerDamageTaken;
-  healthText.innerText = health;
-
-  if (health <= 0) {
-    lose();
-  } else if (monsterHealth <= 0) {
-    monsterHealthText.innerText = 0;
-    button1.onclick = empty;
-    winFight();
-    monsterDefeat();
-    victory();
-  }
-  updateHealth(-playerDamageTaken);
-  updateMonsterHealth(-monsterDamageTaken);
-  totalDmg += playerDamageTaken;
-  return { playerDamageTaken, monsterDamageTaken };
-}
-
-
-
-function parryDummy() {
-  if (currentLocation == 1) {
-    if (monsterHealth <= 0 || health <= 0) {
-      empty();
-    } else {
-
-      let randomChance = Math.random();
-
-      if (randomChance < 0.21) {
-        monsterHealth -= Math.ceil(weapons[currentWeapon].power * 0.9);
-        text.innerText = "You rollled on the ground and manage to get behind the enemy, you hit the bucket with your staff. Impresive" + weapons[currentWeapon].power + " damage.";
-      } else if (randomChance < 0.43) {
-        monsterHealth -= Math.ceil(weapons[currentWeapon].power * 0.3);
-        text.innerText = "That wasn't good. You looked at Grandmas kitchen window in hope she didnt saw that.";
-      } else {
-        health -= Math.floor(monsterAttack(monsters[fighting].level) * 0.45);
-        monsterHealth -= Math.ceil(weapons[currentWeapon].power * 0.6);
-        text.innerText = "That was terrible, be careful, dont hurt yourself!";
-      }
-
-      updateHealth();
-      healthText.innerText = Math.round(health);
-      monsterHealthText.innerText = Math.round(monsterHealth);
-
-      if (health <= 0) {
-        healthText.innerText = 0;
-        lose();
-      } else if (monsterHealth <= 0) {
-        monsterHealthText.innerText = 0;
-        winFight();
-        monsterDefeat();
-        victory();
-      }
-    }
-  } else if (currentLocation == 27) {
-    if (monsterHealth <= 0 || health <= 0) {
-      empty();
-    } else {
-
-      let randomChance = Math.random();
-
-      if (randomChance < 0.21) {
-        monsterHealth -= Math.ceil(weapons[currentWeapon].power * 0.9);
-        text.innerText = "You rollled on the ground and manage to get behind the enemy, you hit its head with your staff. Impresive" + weapons[currentWeapon].power + " damage.";
-      } else if (randomChance < 0.43) {
-        monsterHealth -= Math.ceil(weapons[currentWeapon].power * 0.3);
-        text.innerText = "Expecting the attack you jumped away and aim at the monster. You miss the head and hit the arm of  monster.";
-      } else {
-        health -= Math.floor(monsterAttack(monsters[fighting].level) * 0.45);
-        monsterHealth -= Math.ceil(weapons[currentWeapon].power * 0.6);
-        text.innerText = "You backed away and tripped over the stone. You fall while monster jumped on you getting hit by your staff. You get hit by its claw.";
-      }
-
-      updateHealth();
-      healthText.innerText = Math.round(health);
-      monsterHealthText.innerText = Math.round(monsterHealth);
-
-      if (health <= 0) {
-        healthText.innerText = 0;
-        lose();
-      } else if (monsterHealth <= 0) {
-        monsterHealthText.innerText = 0;
-        winFight();
-        monsterDefeat();
-        victory();
-      }
-    }
-  }
-}
-
-function getRandomDamage(min, max, crit) {
-  const baseDamage = Math.floor(Math.random() * (max - min + 1)) + min;
-  const criticalChance = Math.random();
-
-  if (criticalChance < 0.29) {
-    return crit;
-  } else {
-    return baseDamage;
-  }
-}
-
-function getMonsterDamage(min, max, crit) {
-  const baseDamage = Math.floor(Math.random() * (max - min + 1)) + min;
-  const criticalChance = Math.random();
-
-  if (criticalChance < 0.2) {
-    return crit;
-  } else {
-    return baseDamage;
-  }
-}
-
-function attack() {
-  let playerDamageTaken = 0;
-  let monsterDamageTaken = 0;
-
-  const weaponDamage = getRandomDamage(
-    weapons[currentWeapon].powerMin,
-    weapons[currentWeapon].powerMax,
-    weapons[currentWeapon].crit
-  );
-
-  const monsterDamage = getMonsterDamage(
-    monsters[fighting].damageMin,
-    monsters[fighting].damageMax,
-    monsters[fighting].crit
-  );
-
-  monsterDamageTaken = weaponDamage + xp;
-  playerDamageTaken = monsterDamage - (Math.floor(0.2 * xp));
-
-  if (monsterHealth <= 0) {
-    empty();
-  } else {
-    if (weaponDamage >= weapons[currentWeapon].crit) {
-      text.innerText = weapons[currentWeapon].critText + " Then ";
-    } else {
-      text.innerText = weapons[currentWeapon].text + " Then ";
-    }
-
-    if (monsterDamage >= monsters[fighting].crit) {
-      text.innerText += monsters[fighting].critText;
-    } else {
-      text.innerText += monsters[fighting].text;
-    }
-    monsterHealth -= monsterDamageTaken;
-    monsterHealthText.innerText = monsterHealth;
-    health -= playerDamageTaken;
-    healthText.innerText = health;
-  }
-
-  if (health <= 0) {
-    lose();
-  } else if (monsterHealth <= 0) {
-    monsterHealthText.innerText = 0;
-    button1.onclick = empty;
-    winFight();
-    monsterDefeat();
-    victory();
-  }
-  updateHealth(-playerDamageTaken);
-  updateMonsterHealth(-monsterDamageTaken);
-  totalDmg += playerDamageTaken;
-  return { playerDamageTaken, monsterDamageTaken };
-}
-
-function parry() {
-  if (monsterHealth <= 0 || health <= 0) {
-    empty();
-  } else {
-    let damageTaken = 0;
-    let randomChance = Math.random();
-
-    if (randomChance < 0.21) {
-      monsterHealth -= Math.ceil(weapons[currentWeapon].power * 0.9);
-      text.innerText = "Your timing was perfect. You manage to parry the attack and counter with a strike. Enemy takes " + weapons[currentWeapon].power + " damage.";
-    } else if (randomChance < 0.43) {
-      damageTaken = Math.floor(monsterAttack(monsters[fighting].level) * 0.4);
-      health -= damageTaken;
-      monsterHealth -= Math.ceil(weapons[currentWeapon].power * 0.3);
-      text.innerText = "You didn't time it well, you take damage.";
-    } else {
-      damageTaken = Math.floor(monsterAttack(monsters[fighting].level) * 0.45);
-      health -= damageTaken;
-      monsterHealth -= Math.ceil(weapons[currentWeapon].power * 0.6);
-      text.innerText = "Despite your readiness, you couldn't avoid the whole blow of the attack. You take damage, but you also did some to the enemy";
-    }
-
-    totalDmg += damageTaken;
-    healthText.innerText = Math.round(health);
-    monsterHealthText.innerText = Math.round(monsterHealth);
-    updateHealth();
-
-    if (health <= 0) {
-      healthText.innerText = 0;
-      lose();
-    } else if (monsterHealth <= 0) {
-      monsterHealthText.innerText = 0;
-      winFight();
-      monsterDefeat();
-      victory();
-    }
-  }
-}
-
-
-function monsterAttack(level) {
-  let hit = (level * 5) - (Math.round(Math.random() * xp));
-  console.log(hit);
-  return hit;
-}
-
-function winFight() {
-  combat = false;
-  xp += monsters[fighting].level;
-  xpText.innerText = xp;
-  if (xp % 2 === 0) {
-    maxHealth += Math.floor((xp / 2) * 5);
-  } else {
-    maxHealth += Math.floor(((xp / 2) * 5) - 2);
-  }
-  monsterOff();
-}
-
-function lose() {
-  monsterOff();
-  gameOff();
-  text.innerText = "You are defetead. You can't continue the advanture, you wont know what layes beyond."
-}
-
-function monsterDefeat() {
-  text.innerText = monsters[fighting].deathText;
-}
-
-
-// afterMatch shoudl be a short text description of aftermatch of a fight and text that currently is displayed should be only avalible with Info function accessible from 3P-A
-
-function afterMatchDummy() {
-  text.innerText = "You have defeated the " + monsters[fighting].name + "!";
-  text.innerText += " You have gained " + monsters[fighting].level + " experience points.";
-  text.innerText += " You lost " + totalDmg + " points of your health.";
-  text.innerText += "You gain experience in combat. You have stronger attacks and can take more dmg. Your Max Health is " + maxHealth + "."
-}
-
-function afterMatch() {
-  text.innerText = "You have defeated the " + monsters[fighting].name + "!";
-  text.innerText += " You have gained " + monsters[fighting].level + " experience points.";
-  text.innerText += " You lost " + totalDmg + " points of your health.";
-  text.innerText += "You gain experience in combat. You have stronger attacks and can take more dmg. Your Max Health is " + maxHealth + "."
-}
-
-function victory() {
-  fighting == 0 ? seeGrandma() : empty();
-  fighting == 1 ? beforeTheStorm() : empty();
-  fighting == 2 ? goFurther() : empty();
-  fighting == 3 ? goCamp() : empty();
-  fighting == 4 ? winGame() : empty();
-  fighting == 5 ? seeGrandma() : empty();
-  button3.onclick = afterCombat;
-  afterFight = true;
-}
-
-function afterCombat() {
-  dexUpdate(dexType, 1);
-}
-
 function emptySlot() {
   text.innerText = "This slot is empty. Need a system upgrade.";
 }
 
 function crafting() {
-  dexUpdate(dexType, 3);
+  pdaUpdate(pdaType, 2);
 }
 
 function upgradeWeapon() {
@@ -879,13 +540,16 @@ function upgradeWeapon() {
 }
 
 function healing() {
-  dexUpdate(dexType, 2);
+  button3.classList.remove("blinking-border");
+  if (health < (0.2 * maxHealth)) {
+    button2.classList.add("blinking-border");
+  }
+
+  pdaUpdate(pdaType, 1);
 }
 
 function makeHealth() {
-  if (combat == true) {
-    text.innerText = "You are in combat. There is big risk of damage while printing the item you selected. This option is locked."
-  } else if (cDust == 0) {
+  if (cDust == 0) {
     text.innerText = "You dont have resources to make this cardridge. Its an emergency situation, so you grab few from the cart."
     cDust += 3;
   } else if (healCardrige == 5) {
@@ -899,36 +563,16 @@ function makeHealth() {
   updateDust();
 }
 
-function heal() {
-  if (health == maxHealth) {
-    text.innerText = "Your health is full.";
-  } else if (healCardrige == 0) {
-    text.innerText = "Your cardrige slot is empty.";
-  } else {
-    // Calculate the actual amount of health restored
-    const healthRestored = Math.min(80, maxHealth - health);
-
-    health += healthRestored;
-
-    healCardrige--;
-    healthText.innerText = health;
-    hcText.innerText = healCardrige;
-
-    // Pass the actual amount of health restored to the updateHealth function
-    updateHealth(healthRestored);
-  }
-}
-
-
 function updateDust() {
   cDustText.innerText = cDust;
   rDustText.innerText = rDust;
   lDustText.innerText = lDust;
+  dustText.innerText = noDust;
 
-  if (cDust || rDust || lDust > 0) {
-    dustText.style.display = "none";
-  } else {
+  if (cDust === 0 && rDust === 0 && lDust === 0) {
     dustText.style.display = "inline-block";
+  } else {
+    dustText.style.display = "none";
   }
 
   if (cDust == 0) {
@@ -957,10 +601,6 @@ function empty() {
 
 }
 
-function dmg() {
-
-}
-
 function snapOut() {
   currentLocation = 26;
   updateLocation(locations[currentLocation]);
@@ -969,14 +609,13 @@ function snapOut() {
 function goFight0() {
   combat = true;
   fighting = 5;
-  fightHealth = health;
   currentLocation = 27;
   updateLocation(locations[currentLocation]);
   monsterOn(fighting);
 }
 
 function getHomeScreenText() {
-  return text.innerText = "Bipp! Boop! ... You see a " + weapons[currentWeapon].name + " displayed in your inventory. Your max health is " + maxHealth + ".";
+  return text.innerText = "Bipp! Boop! ... You see a " + weapons[currentWeapon].name + " displayed in your inventory. Your max health is " + maxHealth + "." + '\n\n' + afterMatch();
 }
 
 // UI managing functions
@@ -1031,7 +670,6 @@ function storyOff() {
 
 function combatOn() {
   combat = true;
-  fightHealth = health;
   totalDmg = 0;
 }
 
@@ -1052,11 +690,12 @@ function start() {
   rDust = 0;
   lDust = 0;
   healCardrige = 0;
-  ammoCardrige = 0;
+  noDust = 0;
 }
 
 
 function training() {
+  button2.classList.remove("blinking-border");
   currentHeader = 1;
   headerText.innerText = headerLocations[currentHeader].title;
   updateLocation(locations[currentLocation]);
@@ -1068,7 +707,6 @@ function training() {
 function goFight() {
   combat = true;
   fighting = 0;
-  fightHealth = health;
   currentLocation = 1;
   updateLocation(locations[currentLocation]);
   monsterOn(fighting);
@@ -1080,17 +718,19 @@ function seeGrandma() {
 }
 
 function kitchen() {
+  button2.classList.remove("blinking-border");
   button3.innerText = "3P-A assist.";
   button3.onclick = assist;
+  isMonsterDead = false;
   storyMode();
   currentHeader = 2;
   headerText.innerText = headerLocations[currentHeader].title;
   text.innerHTML = cutscene[1].text;
   arrowRight.onclick = preperation;
-  dexUpdate();
 }
 
 function preperation() {
+  button2.classList.remove("blinking-border");
   currentHeader = 3;
   headerText.innerText = headerLocations[currentHeader].title;
   text.innerHTML = cutscene[2].text;
@@ -1098,9 +738,10 @@ function preperation() {
 }
 
 function departure() {
+  button2.classList.remove("blinking-border");
   text.innerHTML = cutscene[3].text;
   arrowRight.onclick = theRoad;
-  dexType = 1;
+  pdaType = 1;
   healCardrige = 3;
   hcText.innerText = healCardrige;
   health = maxHealth;
@@ -1154,14 +795,10 @@ function goFight2() {
   monsterOn(fighting);
 }
 
-function beforeTheStorm() {
-  rightOn();
-  arrowRight.onclick = stormComing;
-}
-
 function stormComing() {
   button3.innerText = "3P-A assist.";
   button3.onclick = assist;
+  isMonsterDead = false;
   storyMode();
   rightOn();
   text.innerHTML = cutscene[4].text;
@@ -1225,6 +862,7 @@ function caveEntrence() {
 }
 
 function explore() {
+  button2.classList.remove("blinking-border");
   text.style.display = "flex";
   game.style.display = "flex";
   rightOff();
@@ -1238,7 +876,13 @@ function explore() {
 function corridor() {
   currentHeader = 10;
   header.innerText = headerLocations[currentHeader].title;
-  if (xp > 45) {
+  if (xp > 45 && pdaInstal == false) {
+    text.innerText = "3P-A found something you might be interested in the cocoon, you should check it out.";
+    rightOn();
+    arrowRight.onclick = further;
+    button1.innerText = "right";
+    button1.onclick = corridor;
+  } else if (xp > 45) {
     currentLocation = 23;
     updateLocation(locations[currentLocation]);
   } else {
@@ -1271,13 +915,14 @@ function goFight3() {
 }
 
 function goFurther() {
-  rightOn();
   arrowRight.onclick = further;
 }
 
 function further() {
+  button2.classList.remove("blinking-border");
   button3.innerText = "3P-A assist.";
   button3.onclick = assist;
+  isMonsterDead = false;
   rightOff();
   currentLocation = 10;
   updateLocation(locations[currentLocation]);
@@ -1299,12 +944,12 @@ function triggerEvent4() {
   updateLocation(locations[currentLocation]);
 }
 
-function takeDex() {
+function takePda() {
   currentLocation = 17;
   updateLocation(locations[currentLocation]);
 }
 
-function takeDex2() {
+function takePda2() {
   currentLocation = 20;
   updateLocation(locations[currentLocation]);
 }
@@ -1327,18 +972,20 @@ function emptyCocoon() {
   currentLocation = 19;
   updateLocation(locations[currentLocation]);
   rightOn();
-  arrowRight.onclick = instalDex;
+  arrowRight.onclick = instalPda;
 }
 
-function instalDex() {
+// this should be called when the puzzle is solved. 
+function instalPda() {
   storyMode();
   text.innerHTML = cutscene[9].text;
   arrowRight.onclick = loopingCave;
-  dexType = 2;
-  dexInstal = true;
+  pdaType = 2;
+  pdaInstal = true;
 }
 
 function goFight4() {
+  rightOff();
   combatOn();
   fighting = 3;
   currentLocation = 12;
@@ -1346,12 +993,9 @@ function goFight4() {
   monsterOn(fighting);
 }
 
-function goCamp() {
-  rightOn();
-  arrowRight.onclick = loopingCave;
-}
-
 function loopingCave() {
+  button2.classList.remove("blinking-border");
+  isMonsterDead = false;
   button3.innerText = "3P-A assist.";
   button3.onclick = assist;
   currentHeader = 9;
@@ -1368,6 +1012,12 @@ function mainHall() {
   if (xp < 44) {
     currentLocation = 24;
     updateLocation(locations[currentLocation]);
+  } else if (pdaInstal == false) {
+    text.innerText = "3P-A found something interesting in the nearby location, you should try to locate it, before you venture further.";
+    rightOn();
+    arrowRight.onclick = further;
+    button1.innerText = "right";
+    button1.onclick = corridor;
   } else {
     currentLocation = 13;
     updateLocation(locations[currentLocation]);
@@ -1391,12 +1041,8 @@ function goFight5() {
   monsterOn(fighting);
 }
 
-function winGame() {
-  rightOn();
-  arrowRight.onclick = deadQueen;
-}
-
 function deadQueen() {
+  isMonsterDead = false;
   storyMode();
   text.innerHTML = cutscene[6].text;
   arrowRight.onclick = theEgg;
@@ -1404,6 +1050,7 @@ function deadQueen() {
 }
 
 function theEgg() {
+  button2.classList.remove("blinking-border");
   currentHeader = 12;
   headerText.innerText = headerLocations[currentHeader].title;
   text.innerHTML = cutscene[7].text;
@@ -1411,6 +1058,7 @@ function theEgg() {
 }
 
 function theEnd() {
+  button2.classList.remove("blinking-border");
   text.innerHTML = cutscene[8].text;
   rightOff();
 }
@@ -1425,11 +1073,6 @@ function rps() {
 }
 
 function ttt() {
-  text.style.display = "none";
-  game.style.display = "none";
-  monsterStats.style.display = "none";
-  stats.style.display = "none";
-  grid.style.display = "flex";
   TTT();
 }
 
@@ -1440,3 +1083,463 @@ function goBack() {
   grid.style.display = "none";
 }
 
+function afterMatch() {
+  if (health <= 0.35 * maxHealth) {
+    text.innerText = "Warning! Immediate medical attention is needed. Any delay can cause serious trauma and even death. Use the medical cartridge from your AI Assistant now!";
+  } else if (health <= 0.75 * maxHealth) {
+    text.innerText = "Caution! Health loss detected. Your health is lower than your maximum health of " + maxHealth + ". Use the medical assistant to prevent further injuries.";
+  } else {
+    text.innerText = "You seem to be in good health. No status effects affecting you or have been detected at the moment.";
+  }
+
+  return text.innerText;
+}
+
+function victory() {
+  rightOn();
+
+  arrowRight.onclick = function() {
+    console.log('Arrow clicked!');
+    switch (fighting) {
+      case 0:
+      case 5:
+        kitchen();
+        break;
+      case 1:
+        stormComing();
+        break;
+      case 2:
+        further();
+        break;
+      case 3:
+        loopingCave();
+        break;
+      case 4:
+        deadQueen();
+        break;
+      default:
+        empty();
+        break;
+    }
+  };
+}
+
+
+function monsterDefeat() {
+
+  text.innerText =
+    monsters[fighting].deathText + '\n\n';
+  text.innerText +=
+    "You have defeated the " +
+    monsters[fighting].name +
+    "!" +
+    " Experience gained in combat " +
+    "(" +
+    "+ " +
+    monsters[fighting].level +
+    ")" +
+    " will make you stronger and more confident." +
+    " You lost total of " +
+    totalDmg +
+    " health points, but your Max Health grew up to " +
+    maxHealth +
+    " points." +
+    '\n\n'
+    ;
+
+  if (health <= 0.3 * maxHealth) {
+    text.innerText += "Warning! Immediate medical attention is needed. Any delay can cause serious trauma and even death. Use the medical cartridge from your AI Assistant now!";
+  } else if (health <= 0.75 * maxHealth) {
+    text.innerText += "Caution! Health loss detected. Your health is lower than your maximum health of " + maxHealth + ". Use the medical assistant to prevent further injuries.";
+  } else {
+    text.innerText += "You seem to be in good health. No status effects affecting you or have been detected at the moment.";
+  }
+}
+
+function winFight() {
+  combat = false;
+  xp += monsters[fighting].level;
+  xpText.innerText = xp;
+  if (xp % 2 === 0) {
+    maxHealth += Math.floor((xp / 2) * 5);
+  } else {
+    maxHealth += Math.floor(((xp / 2) * 5) - 2);
+  }
+  monsterOff();
+}
+
+
+// whole player and monster attack section
+
+let isAttacking = false;
+
+function pressAttack() {
+  if (monsterHealth <= 0 || health <= 0) {
+    return;
+  }
+
+  if (isAttacking) {
+    return;
+  }
+
+  isAttacking = true;
+
+  let playerAttackResult = attack();
+  updateMonsterHealth(playerAttackResult.monsterDamageTaken);
+
+  if (monsterHealth <= 0) {
+    victory();
+    winFight();
+    monsterDefeat();
+    healthWarning();
+    isMonsterDead = true;
+    isAttacking = false;
+    return;
+  }
+
+  setTimeout(() => {
+    if (monsterHealth > 0) {
+      let monsterAttackResult = monsterAttack(isMonsterDead);
+      updateHealth(monsterAttackResult.playerDamageTaken);
+      totalDmg += monsterAttackResult.playerDamageTaken;
+
+      if (health <= 0) {
+        lose();
+      }
+    }
+    isAttacking = false;
+  }, 650);
+}
+
+function attack() {
+  // player attack damage calculation
+
+  let weaponDamage = getRandomDamage(
+    weapons[currentWeapon].powerMin,
+    weapons[currentWeapon].powerMax,
+    weapons[currentWeapon].crit
+  );
+
+  let monsterDamageTaken = weaponDamage + (Math.floor(0.2 * xp));
+  monsterHealth -= monsterDamageTaken;
+
+  // text comment
+
+  if (monsterHealth <= 0) {
+    empty();
+  } else {
+    if (weaponDamage >= weapons[currentWeapon].crit) {
+      text.innerText = weapons[currentWeapon].critText;
+    } else {
+      text.innerText = weapons[currentWeapon].text;
+    }
+  }
+
+  // last hit triggers
+
+
+  return { monsterDamageTaken: -monsterDamageTaken };
+}
+
+function monsterAttack() {
+
+  if (isMonsterDead) {
+    playerDamageTaken = 0;
+    return { playerDamageTaken: -playerDamageTaken };
+  }
+
+  // player damage recieve calculation
+
+  let monsterDamage = getMonsterDamage(
+    monsters[fighting].damageMin,
+    monsters[fighting].damageMax,
+    monsters[fighting].crit
+  );
+
+  let playerDamageTaken = monsterDamage - (Math.floor(0.1 * xp));
+  health -= playerDamageTaken;
+
+  if (fighting == 4) {
+    monsterHeal();
+  }
+
+  // text comment
+
+  if (monsterDamage >= monsters[fighting].crit) {
+    text.innerText += " Then " + monsters[fighting].critText;
+  } else {
+    if (fighting == 0) {
+      return { playerDamageTaken: -playerDamageTaken };
+    } else {
+      text.innerText += " Then " + monsters[fighting].text;
+    }
+  }
+
+  return { playerDamageTaken: -playerDamageTaken };
+}
+
+// damage generating functions
+
+function getRandomDamage(min, max, crit) {
+  const baseDamage = Math.floor(Math.random() * (max - min + 1)) + min;
+  const criticalChance = Math.random();
+
+  if (criticalChance < 0.29) {
+    return crit;
+  } else {
+    return baseDamage;
+  }
+}
+
+function getMonsterDamage(min, max, crit) {
+  const baseDamage = Math.floor(Math.random() * (max - min + 1)) + min;
+  const criticalChance = Math.random();
+
+  if (criticalChance < 0.2) {
+    return crit;
+  } else {
+    return baseDamage;
+  }
+}
+
+// visual updates
+
+function updateHealth(healthChange) {
+
+  let change = healthChange;
+
+  if (change === 0) {
+    return;
+  }
+
+  healthText.innerText = health;
+
+  if (health < (0.2 * maxHealth)) {
+    healthText.style.color = "red";
+    healthWarning();
+  } else {
+    button1.classList.remove("blinking-border");
+    button2.classList.remove("blinking-border");
+    button3.classList.remove("blinking-border");
+    healthText.style.color = health == maxHealth ? "green" : "black";
+  }
+
+  const animationSpan = document.createElement("span");
+  animationSpan.innerText = change > 0 ? "+" + change : change;
+  animationSpan.classList.add("health-animation");
+  animationSpan.style.color = change > 0 ? "green" : "red";
+  animationSpan.style.top = `${Math.floor(Math.random() * 21) - 10}px`;
+  animationSpan.style.left = `${Math.floor(Math.random() * 21) - 10}px`;
+  document.querySelector("#healthText").appendChild(animationSpan);
+  animationSpan.classList.add("animate");
+
+  animationSpan.addEventListener("animationend", () => {
+    animationSpan.remove();
+  });
+}
+
+
+function heal() {
+  if (health == maxHealth) {
+    text.innerText = "Your health is full.";
+  } else if (healCardrige == 0) {
+    text.innerText = "Your cardrige slot is empty.";
+  } else {
+    // Calculate the actual amount of health restored
+    let healing = Math.min(80, maxHealth - health);
+
+    health += healing;
+
+    healCardrige--;
+    healthText.innerText = health;
+    hcText.innerText = healCardrige;
+
+    // Pass the actual amount of health restored to the updateHealth function
+    updateHealth(healing);
+  }
+}
+
+function updateMonsterHealth(monsterHealthChange) {
+
+  let change = monsterHealthChange;
+
+  if (change === 0) {
+    return;
+  }
+
+  monsterHealthText.innerText = monsterHealth;
+
+  const animationSpan = document.createElement("span");
+  animationSpan.innerText = change > 0 ? "+" + change : "" + change;
+  animationSpan.classList.add("monsterHealth-animation");
+  animationSpan.style.color = "white";
+
+  const monsterHealthRect = monsterHealthText.getBoundingClientRect();
+
+  animationSpan.style.top = `${monsterHealthRect.top + Math.floor(Math.random() * 21) - 10}px`;
+  animationSpan.style.left = `${monsterHealthRect.left + Math.floor(Math.random() * 21) - 10}px`;
+
+  document.body.appendChild(animationSpan);
+
+  animationSpan.classList.add("animate");
+
+  animationSpan.addEventListener("animationend", () => {
+    animationSpan.remove();
+  });
+}
+
+function monsterHeal() {
+  let healing = Math.floor(Math.random() * 5);
+  monsterHealth += healing;
+
+  updateMonsterHealth(healing);
+}
+
+function pressParry() {
+
+  button3.classList.remove("blinking-border");
+
+  button3.innerText = "Back"
+  button3.onclick = backDefence;
+  button2.innerText = "Heal";
+  button2.onclick = healDefence;
+  button1.innerText = "---";
+  button1.onclick = emptySlot;
+}
+
+function parry() {
+
+  if (monsterHealth <= 0 || health <= 0) {
+    return;
+  }
+
+  let monsterAttackResult = monsterAttack();
+
+  let parryMonsterAttack = Math.ceil(0.8 * (-monsterAttackResult.playerDamageTaken));
+  updateHealth(-parryMonsterAttack);
+  totalDmg += parryMonsterAttack;
+
+  if (health <= 0) {
+    healthText.innerText = 0;
+    lose();
+  } else if (monsterHealth <= 0) {
+    monsterHealthText.innerText = 0;
+    winFight();
+    monsterDefeat();
+    victory();
+  }
+}
+
+function backDefence() {
+
+  if (health < (0.2 * maxHealth)) {
+    button3.classList.add("blinking-border");
+  }
+
+  button1.innerText = "Attack";
+  button1.onclick = pressAttack;
+  button2.innerText = "Parry";
+  button2.onclick = pressParry;
+  button3.innerText = "3P-A assist"
+  button3.onclick = assist;
+}
+
+function healDefence() {
+  if (health == maxHealth) {
+    text.innerText = "Your health is full.";
+  } else if (healCardrige == 0) {
+    text.innerText = "Your cardrige slot is empty.";
+  } else {
+    // Calculate the actual amount of health restored
+    let healing = Math.min(80, maxHealth - health);
+
+    health += healing;
+
+    healCardrige--;
+    healthText.innerText = health;
+    hcText.innerText = healCardrige;
+    text.innerText = " You heal " + healing + " points. "
+
+    // Pass the actual amount of health restored to the updateHealth function
+    updateHealth(healing);
+    setTimeout(() => {
+      parry();
+    }, 650);
+  }
+}
+
+function lose() {
+  monsterOff();
+  gameOff();
+  text.innerText = monsters[fighting].playerDeath;
+}
+
+function healthWarning() {
+
+  if (health < (0.2 * maxHealth)) {
+    button3.classList.add("blinking-border");
+    healthText.style.color = "red";
+  }
+}
+
+// dogtag popup button
+
+const popupButton = document.getElementById("popup-button");
+const popupContainer = document.getElementById("popup-container");
+const closeButton = document.getElementById("close-button");
+const popupImage1 = document.getElementById("popup-image1");
+const popupImage2 = document.getElementById("popup-image2");
+
+let activeImage = popupImage1; // Currently displayed image
+
+popupButton.addEventListener("click", () => {
+  popupContainer.classList.toggle("active");
+});
+
+closeButton.addEventListener("click", () => {
+  popupContainer.classList.remove("active");
+});
+
+popupImage1.addEventListener("click", () => {
+  activeImage.style.display = "none"; // Hide the current image
+  popupImage2.style.display = "block"; // Show the other image
+  activeImage = popupImage2; // Update the active image reference
+});
+
+popupImage2.addEventListener("click", () => {
+  activeImage.style.display = "none"; // Hide the current image
+  popupImage1.style.display = "block"; // Show the other image
+  activeImage = popupImage1; // Update the active image reference
+});
+
+// extra buttons arrangment
+
+window.addEventListener('load', function() {
+  const windowElement = document.getElementById('window');
+  const extraButtonsElement = document.getElementById('extraButtons');
+
+  function updateTargetSize() {
+    const windowRect = windowElement.getBoundingClientRect();
+    extraButtonsElement.style.width = `${windowRect.width}px`;
+  }
+
+  updateTargetSize();
+  window.addEventListener('resize', updateTargetSize);
+
+  // Create a Mutation Observer to watch for changes
+  const observer = new MutationObserver(updateTargetSize);
+
+  // Start observing the target element for configured mutations
+  observer.observe(windowElement, { attributes: true, childList: true, subtree: true });
+});
+
+// puzzle box toggle
+
+puzzleBoxElement.addEventListener("click", () => {
+  puzzleContainer.classList.toggle("active");
+  puzzle();
+});
+
+closePuzzleButton.addEventListener("click", () => {
+  puzzleContainer.classList.remove("active");
+});
