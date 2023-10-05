@@ -1,6 +1,5 @@
 import { RPS } from './RPS.js';
 import { TTT } from './TTT.js';
-import { puzzle } from './puzzle.js';
 
 // header element
 const header = document.querySelector("#header");
@@ -21,7 +20,8 @@ const headerLocations = [
   { title: "Incubation shaft" },
   { title: "Main Chamber" },
   { title: "The Egg" },
-  { title: "Antigravity AI Assistant" }
+  { title: "Antigravity AI Assistant" },
+  { title: "To be continued ..."}
 ];
 
 
@@ -68,7 +68,7 @@ const weapons = [
     powerMax: 21,
     crit: 28,
     text: "You spin the spear at your side, culminating in a swift slice towards the enemy, the razor-sharp edge cutting through everything that is on it's path.",
-    crittext: " Arching your entire body backward and balancing on one foot, you focus the weight like a taut string, primed for release. With an explosive, fluid motion, you unleash the accumulated tension, driving your arms forward. The spear's tip, cutting through the air at incredible speed, pierces the enemy's body dealing Critical damage."
+    critText: " Arching your entire body backward and balancing on one foot, you focus the weight like a taut string, primed for release. With an explosive, fluid motion, you unleash the accumulated tension, driving your arms forward. The spear's tip, cutting through the air at incredible speed, pierces the enemy's body dealing Critical damage."
   },
 ];
 
@@ -201,14 +201,14 @@ const locations = [
     name: "exploration7",
     "button text": ["Left", "right"],
     "button functions": [mainHall, corridor],
-    text: "The wind was defening, you woudln't dare to go outside. It was time to explore the cave. The storm seem to pick up on intensivity, might as well explore the surroundings. There is a crossroad. You can go lef or right."
+    text: "The wind was defening, you woudlnt dare to go outside. It was time to explore the cave. The storm might take a while, might as well see the other options. There is a crossroad. You can go lef or right."
   },
   // right
   {
     name: "corridor8",
     "button text": ["Touch", "go further"],
     "button functions": [goFight3, further],
-    text: "The corridor is getting smaller but still big enough to follow. Spiderwebs and slime is everywhere. You see wet eggs the size of a big wattermelons bunched together. You getting a closer look."
+    text: "The corridor is getting smaller but still big enough to follow. Spiderwebs and slime is everywhere. You see wet eggs the size of a big wattermelon bunched together. You getting a closer look."
   },
   {
     name: "eggs9",
@@ -354,10 +354,10 @@ const cutscene = [
     text: " At the last moment he saw a cave in the distans and run straight towrds it. A wall of red dust close the entrence behind Misha. He is trapped, but safe. Darkness was overhelming, it was a shock that made other senses sharpened. Misha wasn't sure the noices coming from the cave were real or he was just imagining? Quickly he manage to pull himself together and order 3P-A to light up the place. Due to lack of sun energy the machine set up is the low consumption mode and turned on the yellow light. It wasnt reaching far, but was enough to make sense of the area. Misha decided to set a camp. Who knows how long this will last."
   },
   {
-    text: "here a player won with the Arakh Queen"
+    text: "The queen has fallen. The silence after her last sqeel is weighting on Misha, his eyes are widly open in his ears are perked up. Adrenalin is still pumping thorugh his heart for him to be ready to react to any kind of danger, but nothing comes, just the silence."
   },
   {
-    text: "here you noticed the egg."
+    text: "It takes a moment for him to calm down. He then looks around still in alert and something draw his attention immidietly. Its not movment, but just a hue of light emiting from an object. Looking at 3P to confirm there is no more danger, his ciouriosity takes over now. He steps towards the object."
   },
   {
     text: "you take the egg, the adventure is finished, but its just the beggining."
@@ -437,9 +437,6 @@ const monsterHealthText = document.querySelector("#monsterHealth");
 const rpsMini = document.querySelector("#rps");
 const headerText = document.querySelector("#header");
 const arrowRight = document.querySelector("#arrowRight");
-const puzzleContainer = document.getElementById("puzzle-container");
-const closePuzzleButton = document.getElementById("close-puzzle-button");
-const puzzleBoxElement = document.getElementById('puzzleBox');
 button3.innerText = "3P-A assist.";
 button3.onclick = assist;
 
@@ -951,13 +948,11 @@ function triggerEvent4() {
 function takePda() {
   currentLocation = 17;
   updateLocation(locations[currentLocation]);
-  puzzleBoxElement.style.display = "flex";
 }
 
 function takePda2() {
   currentLocation = 20;
   updateLocation(locations[currentLocation]);
-  puzzleBoxElement.style.display = "flex";
 }
 
 function takeDust() {
@@ -975,11 +970,10 @@ function takeDust2() {
 }
 
 function emptyCocoon() {
-  popupButton.style.display = "flex";
   currentLocation = 19;
   updateLocation(locations[currentLocation]);
   rightOn();
-  arrowRight.onclick = goFight4;
+  arrowRight.onclick = instalPda;
 }
 
 // this should be called when the puzzle is solved. 
@@ -1033,7 +1027,7 @@ function mainHall() {
 }
 
 function finalBoss() {
-  currentHeader = 10
+  currentHeader = 11
   headerText.innerText = headerLocations[currentHeader].title;
   currentLocation = 14;
   updateLocation(locations[currentLocation]);
@@ -1058,16 +1052,27 @@ function deadQueen() {
 
 function theEgg() {
   button2.classList.remove("blinking-border");
+  text.innerHTML = cutscene[7].text;
+  arrowRight.onclick = claimEgg;
+}
+
+function claimEgg(){
   currentHeader = 12;
   headerText.innerText = headerLocations[currentHeader].title;
-  text.innerHTML = cutscene[7].text;
-  arrowRight.onclick = theEnd;
+  rightOff();
+  storyOff();
+  img.style.display = "flex";
+  cave.style.display ="none";
+  egg.style.display = "flex";
+  egg.onclick = theEnd;
 }
 
 function theEnd() {
+  currentHeader = 14;
+  headerText.innerText = headerLocations[currentHeader].title;
+  storyMode();
   button2.classList.remove("blinking-border");
   text.innerHTML = cutscene[8].text;
-  rightOff();
 }
 
 function rps() {
@@ -1550,4 +1555,3 @@ puzzleBoxElement.addEventListener("click", () => {
 closePuzzleButton.addEventListener("click", () => {
   puzzleContainer.classList.remove("active");
 });
-
