@@ -20,7 +20,8 @@ const headerLocations = [
   { title: "Incubation shaft" },
   { title: "Main Chamber" },
   { title: "The Egg" },
-  { title: "Antigravity AI Assistant" }
+  { title: "Antigravity AI Assistant" },
+  { title: "To be continued ..."}
 ];
 
 
@@ -67,7 +68,7 @@ const weapons = [
     powerMax: 21,
     crit: 28,
     text: "You spin the spear at your side, culminating in a swift slice towards the enemy, the razor-sharp edge cutting through everything that is on it's path.",
-    crittext: " Arching your entire body backward and balancing on one foot, you focus the weight like a taut string, primed for release. With an explosive, fluid motion, you unleash the accumulated tension, driving your arms forward. The spear's tip, cutting through the air at incredible speed, pierces the enemy's body dealing Critical damage."
+    critText: " Arching your entire body backward and balancing on one foot, you focus the weight like a taut string, primed for release. With an explosive, fluid motion, you unleash the accumulated tension, driving your arms forward. The spear's tip, cutting through the air at incredible speed, pierces the enemy's body dealing Critical damage."
   },
 ];
 
@@ -353,10 +354,10 @@ const cutscene = [
     text: " At the last moment he saw a cave in the distans and run straight towrds it. A wall of red dust close the entrence behind Misha. He is trapped, but safe. Darkness was overhelming, it was a shock that made other senses sharpened. Misha wasn't sure the noices coming from the cave were real or he was just imagining? Quickly he manage to pull himself together and order 3P-A to light up the place. Due to lack of sun energy the machine set up is the low consumption mode and turned on the yellow light. It wasnt reaching far, but was enough to make sense of the area. Misha decided to set a camp. Who knows how long this will last."
   },
   {
-    text: "here a player won with the Arakh Queen"
+    text: "The queen has fallen. The silence after her last sqeel is weighting on Misha, his eyes are widly open in his ears are perked up. Adrenalin is still pumping thorugh his heart for him to be ready to react to any kind of danger, but nothing comes, just the silence."
   },
   {
-    text: "here you noticed the egg."
+    text: "It takes a moment for him to calm down. He then looks around still in alert and something draw his attention immidietly. Its not movment, but just a hue of light emiting from an object. Looking at 3P to confirm there is no more danger, his ciouriosity takes over now. He steps towards the object."
   },
   {
     text: "you take the egg, the adventure is finished, but its just the beggining."
@@ -1026,7 +1027,7 @@ function mainHall() {
 }
 
 function finalBoss() {
-  currentHeader = 10
+  currentHeader = 11
   headerText.innerText = headerLocations[currentHeader].title;
   currentLocation = 14;
   updateLocation(locations[currentLocation]);
@@ -1051,16 +1052,27 @@ function deadQueen() {
 
 function theEgg() {
   button2.classList.remove("blinking-border");
+  text.innerHTML = cutscene[7].text;
+  arrowRight.onclick = claimEgg;
+}
+
+function claimEgg(){
   currentHeader = 12;
   headerText.innerText = headerLocations[currentHeader].title;
-  text.innerHTML = cutscene[7].text;
-  arrowRight.onclick = theEnd;
+  rightOff();
+  storyOff();
+  img.style.display = "flex";
+  cave.style.display ="none";
+  egg.style.display = "flex";
+  egg.onclick = theEnd;
 }
 
 function theEnd() {
+  currentHeader = 14;
+  headerText.innerText = headerLocations[currentHeader].title;
+  storyMode();
   button2.classList.remove("blinking-border");
   text.innerHTML = cutscene[8].text;
-  rightOff();
 }
 
 function rps() {

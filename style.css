@@ -26,6 +26,10 @@ html, body {
   #cave {
     display: none;
   }
+
+  #egg {
+    display: none;
+  }
   
   #textIndex {
     margin: 15px;
