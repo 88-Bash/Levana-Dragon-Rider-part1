@@ -1,0 +1,40 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+button {
+    width: 33.3%;
+}
+
+.ui-elements {
+    padding: 5px 0px;
+    width: 92%;
+}
+
+.ux-elements {
+    padding: 5px;
+    width: 90%;
+    border: 3px solid;
+    border-radius: 7px;
+}
+
+#main-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: 2px double;
+    padding: 7px;
+    width: 500px;
+}
+
+#status-bars {
+    display: flex;
+    justify-content: space-between;
+}
+
+#buttons {
+    display: flex;
+    justify-content: space-around;
+}
