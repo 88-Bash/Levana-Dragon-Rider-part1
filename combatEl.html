@@ -9,8 +9,8 @@
 <body>
     <div id="main-container">
         <div id="status-bars" class="ui-elements">
-            <div id="hero" class ="status-bar">Hero: <span class="health">health</span><span class="armor">armor</span><span class="ff">field</span></div>
-            <div id="enenmy" class ="status-bar"><span class="ff">field</span><span class="armor">armor</span><span class="health">health</span> :Enemy</div>
+            <div id="hero" class ="status-bar"><span id="healthHero"></span><span id="armorHero"></span><span id="ffHero"></span></div>
+            <div id="enemy" class ="status-bar"><span id="ffEnemy">field</span><span id="armorEnemy">armor</span><span id="healthEnemy">health</span> :Enemy</div>
         </div>
         <div id="graphics" class="ux-elements">Here are the combat graphics</div>
         <div id="buttons" class="ui-elements">
@@ -20,5 +20,6 @@
         </div>
         <div id="combat-text" class="ux-elements">Here is combat text!</div>
     </div>
+    <script src="combatEl.js"></script>
 </body>
 </html>

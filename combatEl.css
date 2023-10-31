@@ -37,4 +37,24 @@ button {
 #buttons {
     display: flex;
     justify-content: space-around;
+    margin: 0px 0px 8px 0px;
+}
+
+#healthHero {
+    border-radius: 5px 0px 0px 5px;
+    background-color: red;
+}
+
+#armorHero {
+    background-color: gray;
+}
+
+#ffHero {
+    background-color: royalblue;
+}
+
+#hero {
+    display: flex;
+    background-color: lightgray;
+    width: 150px;
 }
