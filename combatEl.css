@@ -4,10 +4,6 @@ body {
     align-items: center;
 }
 
-button {
-    width: 33.3%;
-}
-
 .ui-elements {
     padding: 5px 0px;
     width: 92%;
@@ -24,20 +20,41 @@ button {
     display: flex;
     flex-direction: column;
     align-items: center;
+    background-color: rgb(188, 170, 10);
     border: 2px double;
     padding: 7px;
     width: 500px;
 }
+
+/* status bar for hero and enemy */
 
 #status-bars {
     display: flex;
     justify-content: space-between;
 }
 
-#buttons {
+.status-bar {
     display: flex;
-    justify-content: space-around;
-    margin: 0px 0px 8px 0px;
+    height: 100%;
+    max-height: 12px;
+    margin: 1px 0px 1px 0px;
+}
+
+.bars {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    max-height: 40px;
+}
+
+/* hero status bar */ 
+
+#hero {
+    border-radius: 5px 0px 0px 5px;
+    display: flex;
+    background-color: lightgray;
+    width: 150px;
+    border: 2px solid silver;
 }
 
 #healthHero {
@@ -53,8 +70,38 @@ button {
     background-color: royalblue;
 }
 
-#hero {
+/* enemy status bar */
+
+#enemy {
+    height: 15;
+    border-radius: 0px 5px 5px 0px;
     display: flex;
     background-color: lightgray;
     width: 150px;
+    border: 2px solid silver;
+}
+
+#healthEnemy {
+    border-radius: 0px 5px 5px 0px;
+    background-color: red;
+}
+
+#armorEnemy {
+    background-color: gray;
+}
+
+#ffEnemy {
+    background-color: royalblue;
+}
+
+/* buttons */ 
+
+#buttons {
+    display: flex;
+    justify-content: space-around;
+    margin: 0px 0px 8px 0px;
+}
+
+button {
+    width: 33.3%;
 }
